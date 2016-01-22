@@ -27,7 +27,6 @@ class Database {
             $this->pdo = new PDO($dsn, $CFG->dbuser, $CFG->dbpass, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-
             $this->bConnected = true;
         } catch (PDOException $e) {
             echo $this->ExceptionLog($e->getMessage());
@@ -147,14 +146,14 @@ class Database {
      * @param array $properties
      * @return int id
      */
-    public function createOrUpdate($table, $properties) {
+    public function createOrUpdate($table, $conditions) {
         $columns = $this->getTableColumns($table);
         //update
-        if ($object = $this->getRecord($table, array('id' => $properties['id']))) {
+        if ($object = $this->getRecord($table, array('id' => $conditions['id']))) {
             $query = 'UPDATE ' . $table . ' SET ';
             foreach ($columns as $column) {
                 if ($column != 'id') {
-                    $value = $properties[$column];
+                    $value = $conditions[$column];
                     $query .= ' ' . $column . ' = :' .$column. ',';
                 }
             }
@@ -163,11 +162,11 @@ class Database {
             $query .= ' WHERE id = :id';
             
             $statement = $this->pdo->prepare($query);
-            $statement->bindValue(':id', $properties['id'], PDO::PARAM_INT);
+            $statement->bindValue(':id', $conditions['id'], PDO::PARAM_INT);
             
             foreach ($columns as $column) {
                 if ($column != 'id') {
-                    $value = $properties[$column];
+                    $value = $conditions[$column];
                     if (is_int($value)) {
                         $statement->bindValue(':'.$column, $value, PDO::PARAM_INT);
                     } else {
@@ -177,7 +176,7 @@ class Database {
             }
                         
             $statement->execute();
-            return $properties['id'];
+            return $conditions['id'];
         } else {
             //create
             $query = "INSERT INTO " . $table . ' (';
@@ -186,7 +185,7 @@ class Database {
 
             foreach ($columns as $column) {
                 if ($column != 'id') {
-                    $value = $properties[$column];
+                    $value = $conditions[$column];
                     $into .= $column . ',';
                     $values .= ':'.$column . ',';
                 }
@@ -199,7 +198,7 @@ class Database {
             
             foreach ($columns as $column) {
                 if ($column != 'id') {
-                    $value = $properties[$column];
+                    $value = $conditions[$column];
                     if (is_int($value)) {
                         $statement->bindValue(':'.$column, $value, PDO::PARAM_INT);
                     }
@@ -244,6 +243,33 @@ class Database {
             }
         }
         $statement->execute();
+    }
+    
+    /**
+     * 
+     * @param string $table
+     * @param array $conditions
+     * @return type
+     */
+    public function createTable($table, array $conditions) {
+        $query = 'CREATE TABLE IF NOT EXISTS ' . $table . ' (';
+        
+        foreach($conditions as $subconditions) {
+            foreach ($subconditions as $condition) {
+                $query .= $condition . ' ';
+            }
+            $query = substr($query, 0, -1);
+            $query .= ', ';
+        }
+        $query = substr($query, 0, -2);
+        $query .= ')';
+        
+        $statement = $this->pdo->exec($query);
+        $columns = $this->getTableColumns($table);
+        
+        if($columns > 0) {
+            return true;
+        }
     }
         
     /** 	

@@ -24,6 +24,9 @@ $CFG->timeoutsession = 3600;
 //Models
 require_once($CFG->dirmodel . 'database.php');
 require_once($CFG->dirmodel . 'model.php');
+require_once($CFG->dirmodel . 'string.php');
+
+//Lib
 require_once($CFG->libdir . 'utility/lib.php');
 
 //Controllers
@@ -35,5 +38,7 @@ require_once($CFG->dirrend . 'core_renderer.php');
 //upgrade
 require_once($CFG->libdir . 'upgrade.php');
 
+//
 $DB = new Database();
 $OUTPUT = new core_renderer();
+$STRING = new String();

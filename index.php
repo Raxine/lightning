@@ -1,5 +1,10 @@
 <?php
 
+if (!file_exists('./config.php')) {
+    header('Location: install.php');
+    die;
+}
+
 require_once('config.php');
 
 session_start();
@@ -16,13 +21,13 @@ foreach ($roadsArray as $road) {
 array_shift($roads);
 
 if(empty($roads)) {
-    require $CFG->dirviewsroot . '/index.php';
+    require $CFG->dirviews . '/index.php';
 } else {
     if ((count($roads) > 0)) {
         $lastValue = end($roads);
         $lastKey = key($roads);
         
-        $filename = $CFG->dirviewsroot;
+        $filename = $CFG->dirviews;
         
         if($_SERVER['QUERY_STRING'] == "") {
             if (is_numeric($lastValue)) {
@@ -57,7 +62,7 @@ if(empty($roads)) {
         if (file_exists($filename)) {
             require $filename;
         } else {
-            require $CFG->dirviewsroot . '/error404.php';
+            require $CFG->dirviews . '/error404.php';
         }
     }
 }
